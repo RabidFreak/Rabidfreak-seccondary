@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Downloads — RabidFreak</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="mobile-menu" id="mobile-menu">
+  <a href="index.html">Home</a>
+  <a href="downloads.html" class="active">Downloads</a>
+  <a href="projects.html">Projects</a>
+  <a href="misc.html">Misc</a>
+</div>
+
+<nav>
+  <a href="index.html" class="nav-logo">Rabid<span>Freak</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="downloads.html" class="active">Downloads</a></li>
+    <li><a href="projects.html">Projects</a></li>
+    <li><a href="misc.html">Misc</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+
+<main>
+  <div class="page-header reveal">
+    <p class="eyebrow">// 02 — Downloads</p>
+    <h1>Get the <span class="hl">stuff.</span></h1>
+    <p>Gallery of images, files and applications — all hosted right here.</p>
+  </div>
+
+  <section class="reveal">
+    <div class="section-label">Sections</div>
+    <div class="downloads-grid" style="grid-template-columns: repeat(3, 1fr);">
+      <a href="gallery.html" class="dl-card">
+        <div class="dl-icon">GL</div>
+        <h3>Gallery</h3>
+        <p>Images from the /IMG folder in this repo.</p>
+      </a>
+      <a href="files.html" class="dl-card">
+        <div class="dl-icon">FL</div>
+        <h3>Files</h3>
+        <p>Applications and downloads made by me.</p>
+      </a>
+      <a href="projects.html" class="dl-card">
+        <div class="dl-icon">PR</div>
+        <h3>Projects</h3>
+        <p>Every public GitHub repo, live.</p>
+      </a>
+    </div>
+  </section>
+
+  <section class="reveal">
+    <div class="section-label">Latest from GitHub</div>
+    <div id="latest-repos" class="repo-grid">
+      <div class="loading">Fetching repos<span class="loading-dots"></span></div>
+    </div>
+  </section>
+</main>
+
+
+<script>
+  const reveals = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  reveals.forEach(r => obs.observe(r));
+
+  const LANG_COLORS = {
+    JavaScript:'#f7df1e',TypeScript:'#3178c6',Python:'#3572A5',HTML:'#e34c26',
+    CSS:'#563d7c',Shell:'#89e051',C:'#555555','C++':'#f34b7d','C#':'#178600',
+    Java:'#b07219',Go:'#00ADD8',Rust:'#dea584',Ruby:'#701516',PHP:'#4F5D95',
+    Swift:'#F05138',Kotlin:'#A97BFF',Dart:'#00B4AB',
+  };
+
+  async function loadLatest() {
+    try {
+      const res = await fetch('https://api.github.com/users/RabidFreak/repos?sort=updated&per_page=6');
+      const repos = (await res.json()).filter(r => r.name !== 'RabidFreak.github.io');
+      const container = document.getElementById('latest-repos');
+      if (!repos.length) { container.innerHTML = '<div class="empty">No public repositories found.</div>'; return; }
+      container.innerHTML = repos.map(repo => {
+        const color = LANG_COLORS[repo.language] || 'var(--accent)';
+        return `<a href="${repo.html_url}" target="_blank" class="repo-card">
+          <div class="repo-name">${repo.name}</div>
+          <div class="repo-desc">${repo.description || 'No description provided.'}</div>
+          <div class="repo-footer">
+            ${repo.language ? `<span class="repo-lang"><span class="lang-dot" style="background:${color}"></span>${repo.language}</span>` : ''}
+            <span>★ ${repo.stargazers_count}</span>
+            <span>⑂ ${repo.forks_count}</span>
+          </div></a>`;
+      }).join('');
+    } catch(e) {
+      document.getElementById('latest-repos').innerHTML = '<div class="empty">Could not load repositories.</div>';
+    }
+  }
+  loadLatest();
+</script>
+
+<script>
+  (function() {
+    var hb = document.getElementById('hamburger');
+    var mm = document.getElementById('mobile-menu');
+    hb.addEventListener('click', function() { hb.classList.toggle('open'); mm.classList.toggle('open'); });
+    mm.querySelectorAll('a').forEach(function(a) {
+      a.addEventListener('click', function() { hb.classList.remove('open'); mm.classList.remove('open'); });
+    });
+    var logo = document.querySelector('.nav-logo');
+    var tc = 0, tt = null;
+    logo.addEventListener('click', function(e) {
+      e.preventDefault(); tc++;
+      if (tt) clearTimeout(tt);
+      if (tc >= 5) { tc = 0; window.location.href = 'passcode.html'; return; }
+      tt = setTimeout(function() { tc = 0; window.location.href = 'index.html'; }, 600);
+    });
+  })();
+</script>
+</body>
+</html>

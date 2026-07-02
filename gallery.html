@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gallery — RabidFreak</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .img-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 2px;
+    }
+
+    .img-cell {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      background: var(--surface);
+      cursor: pointer;
+    }
+
+    .img-cell img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.35s ease, opacity 0.3s ease;
+      opacity: 0;
+    }
+
+    .img-cell img.loaded { opacity: 1; }
+    .img-cell:hover img { transform: scale(1.06); }
+
+    .img-cell .img-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: flex;
+      align-items: flex-end;
+      padding: 0.75rem;
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+
+    .img-cell:hover .img-overlay { opacity: 1; }
+
+    .img-overlay span {
+      font-size: 11px;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      word-break: break-all;
+    }
+
+    .img-count {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.1em;
+    }
+
+    #lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    #lightbox.open { display: flex; }
+
+    #lightbox img {
+      max-width: 90vw;
+      max-height: 80vh;
+      object-fit: contain;
+      display: block;
+    }
+
+    #lightbox-name {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+    }
+
+    #lightbox-close {
+      position: absolute;
+      top: 1.5rem;
+      right: 2rem;
+      font-size: 1.5rem;
+      color: var(--muted);
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: var(--font-mono);
+      transition: color 0.2s;
+    }
+
+    #lightbox-close:hover { color: var(--accent); }
+
+    #lightbox-prev,
+    #lightbox-next {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.2rem;
+      color: var(--muted);
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: var(--font-mono);
+      padding: 1rem;
+      transition: color 0.2s;
+    }
+
+    #lightbox-prev:hover,
+    #lightbox-next:hover { color: var(--accent); }
+
+    #lightbox-prev { left: 1rem; }
+    #lightbox-next { right: 1rem; }
+
+    #lightbox-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.05);
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.5rem 1.2rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+    }
+
+    #lightbox-download:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: rgba(127,255,178,0.06);
+    }
+
+    .error-box {
+      border: 1px solid var(--muted2);
+      padding: 3rem 2rem;
+      max-width: 480px;
+      text-align: center;
+      grid-column: 1 / -1;
+      margin: 2rem auto;
+    }
+
+    .error-box .err-code {
+      font-family: var(--font-display);
+      font-size: 4rem;
+      font-weight: 800;
+      color: var(--muted2);
+      line-height: 1;
+      margin-bottom: 1rem;
+    }
+
+    .error-box p {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .error-box code {
+      color: var(--accent);
+      font-family: var(--font-mono);
+    }
+  </style>
+</head>
+<body>
+
+<div class="mobile-menu" id="mobile-menu">
+  <a href="index.html">Home</a>
+  <a href="downloads.html" class="active">Downloads</a>
+  <a href="projects.html">Projects</a>
+  <a href="misc.html">Misc</a>
+</div>
+
+<nav>
+  <a href="index.html" class="nav-logo">Rabid<span>Freak</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="downloads.html" class="active">Downloads</a></li>
+    <li><a href="projects.html">Projects</a></li>
+    <li><a href="misc.html">Misc</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+
+<main>
+  <div class="page-header reveal">
+    <p class="eyebrow">// 02A — Gallery</p>
+    <h1>Featured <span class="hl">work.</span></h1>
+    <p>Images loaded from the <code style="color:var(--accent); font-family:var(--font-mono);">/IMG</code> folder in this repo.</p>
+  </div>
+
+  <section>
+    <div id="img-count" class="img-count"></div>
+    <div id="gallery-grid" class="img-grid">
+      <div class="loading" style="grid-column:1/-1; padding:4rem 0; text-align:center;">
+        Looking for pictures<span class="loading-dots"></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="reveal" style="padding-top:2rem;">
+    <a href="projects.html"
+       style="display:inline-block; border:1px solid var(--border); padding:0.7rem 1.8rem;
+              font-size:12px; letter-spacing:0.1em; text-transform:uppercase;
+              color:var(--muted); text-decoration:none; transition:all 0.2s;"
+       onmouseover="this.style.color='var(--accent)';this.style.borderColor='var(--accent)'"
+       onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">
+      View all projects →
+    </a>
+  </section>
+</main>
+
+<div id="lightbox">
+  <button id="lightbox-close">✕</button>
+  <button id="lightbox-prev">←</button>
+  <img id="lightbox-img" src="" alt="">
+  <span id="lightbox-name"></span>
+  <a id="lightbox-download" download>↓ download</a>
+  <button id="lightbox-next">→</button>
+</div>
+
+
+<script>
+  const reveals = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  reveals.forEach(r => obs.observe(r));
+
+  const GITHUB_USER = 'RabidFreak';
+  const GITHUB_REPO = 'RabidFreak.github.io';
+  const IMG_FOLDER  = 'IMG';
+  const IMG_EXTS    = ['jpg','jpeg','png','gif','webp','svg','bmp'];
+
+  const grid    = document.getElementById('gallery-grid');
+  const counter = document.getElementById('img-count');
+
+  function showError(code, message) {
+    grid.innerHTML = `
+      <div class="error-box">
+        <div class="err-code">${code}</div>
+        <p>${message}</p>
+      </div>`;
+    counter.textContent = '';
+  }
+
+  // ── Lightbox ──
+  let lightboxImages = [];
+  let lightboxIndex  = 0;
+
+  const lb      = document.getElementById('lightbox');
+  const lbImg   = document.getElementById('lightbox-img');
+  const lbName  = document.getElementById('lightbox-name');
+  const lbClose = document.getElementById('lightbox-close');
+  const lbPrev  = document.getElementById('lightbox-prev');
+  const lbNext  = document.getElementById('lightbox-next');
+  const lbDl    = document.getElementById('lightbox-download');
+
+  function openLightbox(index) {
+    lightboxIndex = index;
+    const item = lightboxImages[index];
+    lbImg.src          = item.url;
+    lbName.textContent = item.name;
+    lbDl.href          = item.url;
+    lbDl.download      = item.name;
+    lb.classList.add('open');
+  }
+
+  lbClose.addEventListener('click', () => lb.classList.remove('open'));
+  lb.addEventListener('click', e => { if (e.target === lb) lb.classList.remove('open'); });
+  lbPrev.addEventListener('click', () => openLightbox((lightboxIndex - 1 + lightboxImages.length) % lightboxImages.length));
+  lbNext.addEventListener('click', () => openLightbox((lightboxIndex + 1) % lightboxImages.length));
+  document.addEventListener('keydown', e => {
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape') lb.classList.remove('open');
+    if (e.key === 'ArrowLeft') lbPrev.click();
+    if (e.key === 'ArrowRight') lbNext.click();
+  });
+
+  // ── Loader ──
+  async function loadGallery() {
+    let data;
+    try {
+      const res = await fetch(
+        `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${IMG_FOLDER}`
+      );
+
+      if (res.status === 404) {
+        showError('404', `Either the <code>/IMG</code> folder doesn't exist or my repo is fucked.<br><br>Create an <code>/IMG</code> folder in the repo root and throw some pictures in it.`);
+        return;
+      }
+
+      if (!res.ok) {
+        showError(res.status, `Either your internet is fucked or my website is.. (HTTP ${res.status})`);
+        return;
+      }
+
+      data = await res.json();
+    } catch (err) {
+      showError('ERR', `Either your internet is fucked or my website is..`);
+      return;
+    }
+
+    // Check for fucked.txt first — if it exists, read it and show its contents
+    const fuckedFile = data.find(f => f.type === 'file' && f.name.toLowerCase() === 'fucked.txt');
+    if (fuckedFile) {
+      try {
+        const txtRes = await fetch(fuckedFile.download_url);
+        const msg = (await txtRes.text()).trim();
+        showError('!', msg || 'Something is fucked.');
+      } catch {
+        showError('!', 'Something is fucked.');
+      }
+      return;
+    }
+
+    const images = data.filter(f =>
+      f.type === 'file' &&
+      IMG_EXTS.includes(f.name.split('.').pop().toLowerCase())
+    );
+
+    if (!images.length) {
+      showError('EMPTY', `Repo is fucked — the <code>/IMG</code> folder exists but there's nothing in it.<br><br>Supported formats: <code>${IMG_EXTS.join(', ')}</code>`);
+      return;
+    }
+
+    lightboxImages = images.map(f => ({ name: f.name, url: f.download_url }));
+    counter.textContent = `${images.length} image${images.length !== 1 ? 's' : ''}`;
+
+    grid.innerHTML = images.map((f, i) => `
+      <div class="img-cell" data-index="${i}">
+        <img data-src="${f.download_url}" alt="${f.name}" loading="lazy">
+        <div class="img-overlay"><span>${f.name}</span></div>
+      </div>
+    `).join('');
+
+    const imgObs = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const img = entry.target;
+        img.src = img.dataset.src;
+        img.addEventListener('load', () => img.classList.add('loaded'), { once: true });
+        img.addEventListener('error', () => {
+          img.parentElement.style.background = 'var(--surface2)';
+          img.remove();
+        }, { once: true });
+        observer.unobserve(img);
+      });
+    }, { rootMargin: '200px' });
+
+    grid.querySelectorAll('img[data-src]').forEach(img => imgObs.observe(img));
+
+    grid.addEventListener('click', e => {
+      const cell = e.target.closest('.img-cell');
+      if (!cell) return;
+      openLightbox(parseInt(cell.dataset.index, 10));
+    });
+  }
+
+  loadGallery();
+</script>
+
+<script>
+  // Hamburger
+  (function() {
+    var hb = document.getElementById('hamburger');
+    var mm = document.getElementById('mobile-menu');
+    if (!hb || !mm) return;
+    hb.addEventListener('click', function() {
+      hb.classList.toggle('open');
+      mm.classList.toggle('open');
+    });
+    mm.querySelectorAll('a').forEach(function(a) {
+      a.addEventListener('click', function() {
+        hb.classList.remove('open');
+        mm.classList.remove('open');
+      });
+    });
+  })();
+
+  // Logo 5-tap easter egg
+  (function() {
+    var logo = document.querySelector('.nav-logo');
+    if (!logo) return;
+    var tc = 0, tt = null;
+    logo.addEventListener('click', function(e) {
+      e.preventDefault();
+      tc++;
+      if (tt) clearTimeout(tt);
+      if (tc >= 5) { tc = 0; window.location.href = 'passcode.html'; return; }
+      tt = setTimeout(function() { tc = 0; window.location.href = 'index.html'; }, 600);
+    });
+  })();
+</script>
+
+</body>
+</html>

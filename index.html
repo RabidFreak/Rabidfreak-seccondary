@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Cave</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="site-notice" id="site-notice">
+  <span>
+    You're viewing a secondary version of this site. It's probably outdated.
+  </span>
+
+  <div class="site-notice-actions">
+    <a href="https://rabidfreak.xyz" target="_blank" rel="noopener">
+      Visit rabidfreak.xyz
+    </a>
+
+    <button id="close-notice" aria-label="Close notification">
+      ✕
+    </button>
+  </div>
+</div>
+  
+<canvas id="hero-canvas"></canvas>
+
+<div class="mobile-menu" id="mobile-menu">
+  <a href="index.html" class="active">Home</a>
+  <a href="downloads.html">Downloads</a>
+  <a href="projects.html">Projects</a>
+  <a href="misc.html">Misc</a>
+</div>
+
+<nav>
+  <a href="index.html" class="nav-logo" id="logo-tap">Rabid<span>Freak</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="downloads.html">Downloads</a></li>
+    <li><a href="projects.html">Projects</a></li>
+    <li><a href="misc.html">Misc</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<main>
+  <section class="hero">
+    <p class="hero-eyebrow">// I do stuff</p>
+    <h1>
+      Hello
+      <span class="big-accent"></span>
+    </h1>
+
+    <div class="hero-nav-cards">
+      <a href="downloads.html" class="hero-nav-card">
+        <div class="num">01</div>
+        <div class="title">Downloads</div>
+        <div class="desc">Gallery &amp; files</div>
+      </a>
+      <a href="misc.html" class="hero-nav-card">
+        <div class="num">02</div>
+        <div class="title">Misc</div>
+        <div class="desc">Tools &amp; experiments</div>
+      </a>
+      <a href="projects.html" class="hero-nav-card">
+        <div class="num">03</div>
+        <div class="title">Projects</div>
+        <div class="desc">All repos, live</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="reveal">
+    <div class="section-label">About</div>
+    <div style="max-width:560px;">
+      <p style="font-size:13px; color:var(--muted); line-height:1.9; margin-bottom:1.5rem;">
+        This site pulls directly from GitHub — every project you see is live and up to date.
+        No manual updates, no stale lists.
+      </p>
+      <a href="https://github.com/RabidFreak" target="_blank"
+         style="display:inline-block; border:1px solid var(--border); padding:0.6rem 1.5rem;
+                font-size:12px; letter-spacing:0.1em; text-transform:uppercase;
+                color:var(--muted); text-decoration:none; transition:all 0.2s;">
+        View on GitHub ↗
+      </a>
+    </div>
+  </section>
+</main>
+
+
+<script>
+  const reveals = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  reveals.forEach(r => obs.observe(r));
+
+  const hamburger  = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobile-menu');
+  hamburger.addEventListener('click', () => {
+    hamburger.classList.toggle('open');
+    mobileMenu.classList.toggle('open');
+  });
+  mobileMenu.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      hamburger.classList.remove('open');
+      mobileMenu.classList.remove('open');
+    });
+  });
+
+  const logoEl = document.getElementById('logo-tap');
+  let tapCount = 0, tapTimer = null;
+  logoEl.addEventListener('click', e => {
+    e.preventDefault();
+    tapCount++;
+    if (tapTimer) clearTimeout(tapTimer);
+    if (tapCount >= 5) { tapCount = 0; window.location.href = 'passcode.html'; return; }
+    tapTimer = setTimeout(() => { tapCount = 0; window.location.href = 'index.html'; }, 600);
+  });
+
+  const canvas = document.getElementById('hero-canvas');
+  const ctx    = canvas.getContext('2d');
+  const CELL = 28, RADIUS = 180, MAX_SCALE = 2.4, BASE_OPACITY = 0.08, HOVER_OPACITY = 0.6;
+  let mouse = { x: -9999, y: -9999 }, cells = [];
+
+  function resize() {
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight; buildGrid();
+  }
+  function buildGrid() {
+    cells = [];
+    const cols = Math.ceil(canvas.width / CELL) + 1;
+    const rows = Math.ceil(canvas.height / CELL) + 1;
+    for (let r = 0; r < rows; r++)
+      for (let c = 0; c < cols; c++)
+        cells.push({ x: c*CELL, y: r*CELL, scale:1, opacity:BASE_OPACITY });
+  }
+  const lerp = (a,b,t) => a+(b-a)*t;
+  const isTouch = window.matchMedia('(hover: none)').matches;
+  let ghost = { x: innerWidth/2, y: innerHeight/2 }, gTarget = { x: innerWidth/2, y: innerHeight/2 }, gTimer = 0;
+  function newGhostTarget() {
+    gTarget.x = 80 + Math.random()*(innerWidth-160);
+    gTarget.y = 80 + Math.random()*(innerHeight-160);
+    gTimer = 90 + Math.random()*90;
+  }
+  if (isTouch) newGhostTarget();
+  function draw() {
+    if (isTouch) {
+      ghost.x = lerp(ghost.x, gTarget.x, 0.025); ghost.y = lerp(ghost.y, gTarget.y, 0.025);
+      mouse.x = ghost.x; mouse.y = ghost.y;
+      if (--gTimer <= 0) newGhostTarget();
+    }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const sq = CELL * 0.32;
+    for (const cell of cells) {
+      const dx = cell.x-mouse.x, dy = cell.y-mouse.y;
+      const prox = Math.max(0, 1 - Math.sqrt(dx*dx+dy*dy)/RADIUS);
+      cell.scale   = lerp(cell.scale,   1+(MAX_SCALE-1)*prox*prox, 0.12);
+      cell.opacity = lerp(cell.opacity, BASE_OPACITY+(HOVER_OPACITY-BASE_OPACITY)*prox*prox, 0.12);
+      const s = sq*cell.scale;
+      ctx.globalAlpha = cell.opacity;
+      ctx.fillStyle = '#7fffb2';
+      ctx.fillRect(cell.x-s/2, cell.y-s/2, s, s);
+    }
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('mousemove', e => { if (!isTouch) { mouse.x=e.clientX; mouse.y=e.clientY; } });
+  window.addEventListener('mouseleave', () => { if (!isTouch) { mouse.x=-9999; mouse.y=-9999; } });
+  window.addEventListener('resize', resize);
+  resize(); draw();
+</script>
+</body>
+</html>

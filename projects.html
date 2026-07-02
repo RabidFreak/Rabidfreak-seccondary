@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projects — RabidFreak</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="mobile-menu" id="mobile-menu">
+  <a href="index.html">Home</a>
+  <a href="downloads.html">Downloads</a>
+  <a href="projects.html" class="active">Projects</a>
+  <a href="misc.html">Misc</a>
+</div>
+
+<nav>
+  <a href="index.html" class="nav-logo">Rabid<span>Freak</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="downloads.html">Downloads</a></li>
+    <li><a href="projects.html" class="active">Projects</a></li>
+    <li><a href="misc.html">Misc</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+
+<main>
+  <div class="page-header reveal">
+    <p class="eyebrow">// 03 — Projects</p>
+    <h1>All <span class="hl">repos.</span></h1>
+    <p>Every public repository, updated live from the GitHub API. Filter by language or sort by activity.</p>
+  </div>
+
+  <section>
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
+      <div class="section-label" style="margin-bottom:0;">Repositories</div>
+      <div style="display:flex; gap:0.75rem; align-items:center;">
+        <label style="font-size:11px; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase;">Sort</label>
+        <select id="sort-select"
+          style="background:var(--surface); border:1px solid var(--border); color:var(--muted);
+                 font-family:var(--font-mono); font-size:11px; padding:0.4rem 0.75rem; cursor:pointer;">
+          <option value="updated">Recently Updated</option>
+          <option value="stars">Most Stars</option>
+          <option value="name">A → Z</option>
+          <option value="forks">Most Forks</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="filter-bar" id="filter-bar">
+      <button class="filter-btn active" data-lang="all">All</button>
+    </div>
+
+    <div style="margin-bottom:1rem; font-size:11px; color:var(--muted2);">
+      <span id="repo-count">—</span> repositories
+    </div>
+
+    <div id="repo-grid" class="repo-grid">
+      <div class="loading">Fetching repositories<span class="loading-dots"></span></div>
+    </div>
+  </section>
+</main>
+
+
+<script>
+  const reveals = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  reveals.forEach(r => obs.observe(r));
+
+  const LANG_COLORS = {
+    JavaScript: '#f7df1e', TypeScript: '#3178c6', Python: '#3572A5',
+    HTML: '#e34c26', CSS: '#563d7c', Shell: '#89e051',
+    C: '#555555', 'C++': '#f34b7d', 'C#': '#178600',
+    Java: '#b07219', Go: '#00ADD8', Rust: '#dea584',
+    Ruby: '#701516', PHP: '#4F5D95', Swift: '#F05138',
+    Kotlin: '#A97BFF', Dart: '#00B4AB',
+  };
+
+  let allRepos = [];
+  let activeFilter = 'all';
+
+  function sortRepos(repos, by) {
+    return [...repos].sort((a, b) => {
+      if (by === 'stars') return b.stargazers_count - a.stargazers_count;
+      if (by === 'name') return a.name.localeCompare(b.name);
+      if (by === 'forks') return b.forks_count - a.forks_count;
+      return new Date(b.updated_at) - new Date(a.updated_at);
+    });
+  }
+
+  function renderRepos(repos) {
+    const grid = document.getElementById('repo-grid');
+    document.getElementById('repo-count').textContent = repos.length;
+
+    if (!repos.length) {
+      grid.innerHTML = '<div class="empty">No repositories match this filter.</div>';
+      return;
+    }
+
+    grid.innerHTML = repos.map(repo => {
+      const color = LANG_COLORS[repo.language] || 'var(--accent)';
+      const updated = new Date(repo.updated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      const desc = repo.description || 'No description provided.';
+      return `
+        <a href="${repo.html_url}" target="_blank" class="repo-card">
+          <div class="repo-name">${repo.name}</div>
+          <div class="repo-desc">${desc}</div>
+          <div class="repo-footer">
+            ${repo.language ? `<span class="repo-lang"><span class="lang-dot" style="background:${color}"></span>${repo.language}</span>` : ''}
+            <span>★ ${repo.stargazers_count}</span>
+            <span>⑂ ${repo.forks_count}</span>
+            <span style="margin-left:auto;">${updated}</span>
+          </div>
+        </a>`;
+    }).join('');
+  }
+
+  function applyFiltersAndSort() {
+    const sortBy = document.getElementById('sort-select').value;
+    const filtered = activeFilter === 'all'
+      ? allRepos
+      : allRepos.filter(r => r.language === activeFilter);
+    renderRepos(sortRepos(filtered, sortBy));
+  }
+
+  function buildFilters(repos) {
+    const langs = [...new Set(repos.map(r => r.language).filter(Boolean))].sort();
+    const bar = document.getElementById('filter-bar');
+    langs.forEach(lang => {
+      const btn = document.createElement('button');
+      btn.className = 'filter-btn';
+      btn.dataset.lang = lang;
+      btn.textContent = lang;
+      bar.appendChild(btn);
+    });
+
+    bar.addEventListener('click', e => {
+      if (!e.target.classList.contains('filter-btn')) return;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      e.target.classList.add('active');
+      activeFilter = e.target.dataset.lang;
+      applyFiltersAndSort();
+    });
+  }
+
+  document.getElementById('sort-select').addEventListener('change', applyFiltersAndSort);
+
+  async function loadProjects() {
+    try {
+      const res = await fetch('https://api.github.com/users/RabidFreak/repos?sort=updated&per_page=100');
+      allRepos = (await res.json()).filter(r => r.name !== 'RabidFreak.github.io');
+
+      if (!Array.isArray(allRepos) || !allRepos.length) {
+        document.getElementById('repo-grid').innerHTML =
+          '<div class="empty">No public repositories found.</div>';
+        document.getElementById('repo-count').textContent = '0';
+        return;
+      }
+
+      buildFilters(allRepos);
+      applyFiltersAndSort();
+    } catch (e) {
+      document.getElementById('repo-grid').innerHTML =
+        '<div class="empty">Could not load repositories. Check your connection.</div>';
+    }
+  }
+
+  loadProjects();
+</script>
+
+<script>
+  // Hamburger
+  (function() {
+    var hb = document.getElementById('hamburger');
+    var mm = document.getElementById('mobile-menu');
+    if (!hb || !mm) return;
+    hb.addEventListener('click', function() {
+      hb.classList.toggle('open');
+      mm.classList.toggle('open');
+    });
+    mm.querySelectorAll('a').forEach(function(a) {
+      a.addEventListener('click', function() {
+        hb.classList.remove('open');
+        mm.classList.remove('open');
+      });
+    });
+  })();
+
+  // Logo 5-tap easter egg
+  (function() {
+    var logo = document.querySelector('.nav-logo');
+    if (!logo) return;
+    var tc = 0, tt = null;
+    logo.addEventListener('click', function(e) {
+      e.preventDefault();
+      tc++;
+      if (tt) clearTimeout(tt);
+      if (tc >= 5) { tc = 0; window.location.href = 'passcode.html'; return; }
+      tt = setTimeout(function() { tc = 0; window.location.href = 'index.html'; }, 600);
+    });
+  })();
+</script>
+
+</body>
+</html>

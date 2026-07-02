@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Misc — RabidFreak</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .misc-tabs {
+      display: flex;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      width: fit-content;
+      margin-bottom: 0;
+    }
+    .misc-tab {
+      background: var(--surface);
+      border: none;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.7rem 1.6rem;
+      cursor: pointer;
+      transition: color 0.2s, background 0.2s;
+    }
+    .misc-tab:hover { color: var(--text); background: var(--surface2); }
+    .misc-tab.active { color: var(--accent); background: var(--surface2); }
+    .tab-panel > .tool-section { border-top: none; }
+
+    /* shared tool card ── */
+    .tool-section {
+      border: 1px solid var(--border);
+      margin-bottom: 2rem;
+    }
+    .tool-header {
+      padding: 1.2rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .tool-title {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .tool-tag {
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      padding: 0.2rem 0.6rem;
+    }
+    .tool-body { padding: 1.5rem; }
+
+    /* ── benchmark ── */
+    .bench-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+    .bench-card {
+      background: var(--surface);
+      padding: 1.25rem;
+    }
+    .bench-label {
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+    .bench-value {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1;
+    }
+    .bench-unit {
+      font-size: 11px;
+      color: var(--muted);
+      margin-left: 3px;
+    }
+    .bench-bar-wrap {
+      height: 4px;
+      background: var(--muted2);
+      margin-top: 0.75rem;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .bench-bar {
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+      transition: width 0.6s ease;
+      border-radius: 2px;
+    }
+    .bench-score {
+      font-family: var(--font-display);
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--accent);
+      margin: 1rem 0 0.3rem;
+    }
+    .bench-score-label {
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.55rem 1.4rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn:hover { border-color: var(--accent); color: var(--accent); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn.running { border-color: var(--accent); color: var(--accent); }
+    .bench-log {
+      font-size: 11px;
+      color: var(--muted);
+      min-height: 1.4em;
+      letter-spacing: 0.05em;
+      margin-top: 1rem;
+    }
+
+    /* ── music maker ── */
+    .mm-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+    }
+    .mm-controls select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 0.45rem 0.75rem;
+      cursor: pointer;
+    }
+    .mm-controls label {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .mm-controls input[type=range] {
+      -webkit-appearance: none;
+      height: 3px;
+      background: var(--muted2);
+      border-radius: 2px;
+      width: 120px;
+      cursor: pointer;
+    }
+    .mm-controls input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+    .mm-controls input[type=number] {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 0.4rem 0.5rem;
+      width: 64px;
+      text-align: center;
+    }
+    .mm-controls input[type=number]:focus { outline: 1px solid var(--accent); }
+
+    .mm-grid-wrap {
+      overflow-x: auto;
+      margin-bottom: 1.25rem;
+    }
+    .mm-grid {
+      display: grid;
+      border: 1px solid var(--border);
+      gap: 1px;
+      background: var(--border);
+      width: max-content;
+      min-width: 100%;
+    }
+    .mm-row {
+      display: flex;
+      gap: 1px;
+    }
+    .mm-label {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: var(--surface);
+      padding: 0.45rem 0.75rem;
+      display: flex;
+      align-items: center;
+      min-width: 80px;
+    }
+    .mm-cell {
+      width: 32px;
+      height: 32px;
+      background: var(--surface);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.1s;
+      position: relative;
+    }
+    .mm-cell.active { background: var(--accent); }
+    .mm-cell.playing { background: var(--accent2) !important; }
+    .mm-cell:hover:not(.active) { background: var(--surface2); }
+    .mm-beat-marker {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      pointer-events: none;
+    }
+    .mm-step-nums {
+      display: flex;
+      gap: 1px;
+      margin-bottom: 2px;
+      padding-left: 82px;
+    }
+    .mm-step-num {
+      width: 32px;
+      font-size: 9px;
+      color: var(--muted2);
+      text-align: center;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="mobile-menu" id="mobile-menu">
+  <a href="index.html">Home</a>
+  <a href="downloads.html">Downloads</a>
+  <a href="projects.html">Projects</a>
+  <a href="misc.html" class="active">Misc</a>
+</div>
+
+<nav>
+  <a href="index.html" class="nav-logo">Rabid<span>Freak</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="downloads.html">Downloads</a></li>
+    <li><a href="projects.html">Projects</a></li>
+    <li><a href="misc.html" class="active">Misc</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+
+<main>
+  <div class="page-header reveal">
+    <p class="eyebrow">// Misc</p>
+    <h1>Tools &amp; <span class="hl">experiments.</span></h1>
+    <p>Stuff that runs in the browser. No installs.</p>
+  </div>
+
+  <!-- ══ TABS ══ -->
+  <section>
+    <div class="misc-tabs" id="misc-tabs">
+      <button class="misc-tab active" data-tab="benchmark">Benchmark</button>
+      <button class="misc-tab" data-tab="music">Music Maker</button>
+    </div>
+
+    <!-- BENCHMARK -->
+    <div class="tab-panel" id="tab-benchmark">
+      <div class="tool-section">
+        <div class="tool-header">
+          <span class="tool-title">Browser Benchmark</span>
+          <span class="tool-tag">CPU · GPU · Memory</span>
+        </div>
+        <div class="tool-body">
+          <div class="bench-grid" id="bench-grid">
+            <div class="bench-card">
+              <div class="bench-label">CPU Score</div>
+              <div class="bench-value" id="b-cpu">—<span class="bench-unit"></span></div>
+              <div class="bench-bar-wrap"><div class="bench-bar" id="b-cpu-bar"></div></div>
+            </div>
+            <div class="bench-card">
+              <div class="bench-label">GPU Score</div>
+              <div class="bench-value" id="b-gpu">—<span class="bench-unit"></span></div>
+              <div class="bench-bar-wrap"><div class="bench-bar" id="b-gpu-bar"></div></div>
+            </div>
+            <div class="bench-card">
+              <div class="bench-label">Memory Score</div>
+              <div class="bench-value" id="b-mem">—<span class="bench-unit"></span></div>
+              <div class="bench-bar-wrap"><div class="bench-bar" id="b-mem-bar"></div></div>
+            </div>
+            <div class="bench-card">
+              <div class="bench-label">JS Ops/sec</div>
+              <div class="bench-value" id="b-ops">—<span class="bench-unit">M</span></div>
+              <div class="bench-bar-wrap"><div class="bench-bar" id="b-ops-bar"></div></div>
+            </div>
+            <div class="bench-card">
+              <div class="bench-label">Canvas FPS</div>
+              <div class="bench-value" id="b-fps">—<span class="bench-unit">fps</span></div>
+              <div class="bench-bar-wrap"><div class="bench-bar" id="b-fps-bar"></div></div>
+            </div>
+            <div class="bench-card">
+              <div class="bench-label">Array Ops/sec</div>
+              <div class="bench-value" id="b-arr">—<span class="bench-unit">M</span></div>
+              <div class="bench-bar-wrap"><div class="bench-bar" id="b-arr-bar"></div></div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:2rem; flex-wrap:wrap;">
+            <div>
+              <div class="bench-score" id="b-total">—</div>
+              <div class="bench-score-label">Total Score</div>
+            </div>
+            <button class="btn" id="bench-btn" onclick="runBenchmark()">Run Benchmark</button>
+          </div>
+          <div class="bench-log" id="bench-log"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MUSIC MAKER -->
+    <div class="tab-panel" id="tab-music" style="display:none;">
+      <div class="tool-section">
+        <div class="tool-header">
+          <span class="tool-title">Step Sequencer</span>
+          <span class="tool-tag">16 steps · 8 instruments</span>
+        </div>
+        <div class="tool-body">
+          <div class="mm-controls">
+            <button class="btn" id="mm-play">▶ Play</button>
+            <button class="btn" id="mm-clear">Clear</button>
+            <label>Tempo</label>
+            <input type="range" id="mm-tempo-slider" min="40" max="220" value="120">
+            <input type="number" id="mm-tempo-num" min="40" max="220" value="120">
+            <span style="font-size:11px; color:var(--muted);">BPM</span>
+          </div>
+          <div class="mm-step-nums" id="mm-step-nums"></div>
+          <div class="mm-grid-wrap">
+            <div class="mm-grid" id="mm-grid"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+
+<script>
+  // ── Nav ──
+  (function() {
+    var hb = document.getElementById('hamburger');
+    var mm = document.getElementById('mobile-menu');
+    hb.addEventListener('click', function() { hb.classList.toggle('open'); mm.classList.toggle('open'); });
+    mm.querySelectorAll('a').forEach(function(a) {
+      a.addEventListener('click', function() { hb.classList.remove('open'); mm.classList.remove('open'); });
+    });
+    var logo = document.querySelector('.nav-logo');
+    var tc = 0, tt = null;
+    logo.addEventListener('click', function(e) {
+      e.preventDefault(); tc++;
+      if (tt) clearTimeout(tt);
+      if (tc >= 5) { tc = 0; window.location.href = 'passcode.html'; return; }
+      tt = setTimeout(function() { tc = 0; window.location.href = 'index.html'; }, 600);
+    });
+  })();
+
+  // ── Reveal ──
+  const reveals = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  reveals.forEach(r => obs.observe(r));
+
+  // ── Tabs ──
+  document.querySelectorAll('.misc-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.misc-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
+      tab.classList.add('active');
+      document.getElementById('tab-' + tab.dataset.tab).style.display = 'block';
+    });
+  });
+
+  // ════════════════════════════════════════
+  // BENCHMARK
+  // ════════════════════════════════════════
+  function setCard(id, barId, value, max, label) {
+    document.getElementById(id).childNodes[0].textContent = value;
+    const pct = Math.min(100, (value / max) * 100);
+    setTimeout(() => { document.getElementById(barId).style.width = pct + '%'; }, 100);
+  }
+
+  function log(msg) { document.getElementById('bench-log').textContent = msg; }
+
+  async function runBenchmark() {
+    const btn = document.getElementById('bench-btn');
+    btn.disabled = true; btn.classList.add('running'); btn.textContent = 'Running...';
+    document.getElementById('b-total').textContent = '—';
+    ['b-cpu-bar','b-gpu-bar','b-mem-bar','b-ops-bar','b-fps-bar','b-arr-bar'].forEach(id => {
+      document.getElementById(id).style.width = '0%';
+    });
+
+    await sleep(50);
+
+    // 1. CPU — prime sieve
+    log('Testing CPU...');
+    await sleep(20);
+    const cpuStart = performance.now();
+    let primes = 0;
+    const sieve = new Uint8Array(500000);
+    for (let i = 2; i < 500000; i++) {
+      if (!sieve[i]) {
+        primes++;
+        for (let j = i*2; j < 500000; j += i) sieve[j] = 1;
+      }
+    }
+    const cpuMs = performance.now() - cpuStart;
+    const cpuScore = Math.round(Math.max(0, 1000 - cpuMs * 1.5));
+    setCard('b-cpu', 'b-cpu-bar', cpuScore, 1000, 'CPU');
+    await sleep(20);
+
+    // 2. JS Ops/sec
+    log('Testing JS throughput...');
+    await sleep(20);
+    const opsStart = performance.now();
+    let x = 0;
+    for (let i = 0; i < 50_000_000; i++) x += Math.sqrt(i) * Math.sin(i);
+    const opsMs = performance.now() - opsStart;
+    const opsM = Math.round(50 / (opsMs / 1000));
+    setCard('b-ops', 'b-ops-bar', opsM, 300, 'Ops');
+    await sleep(20);
+
+    // 3. Memory — large array alloc & fill
+    log('Testing memory...');
+    await sleep(20);
+    const memStart = performance.now();
+    const arr = new Float64Array(2_000_000);
+    for (let i = 0; i < arr.length; i++) arr[i] = Math.random();
+    let sum = 0; for (let i = 0; i < arr.length; i++) sum += arr[i];
+    const memMs = performance.now() - memStart;
+    const memScore = Math.round(Math.max(0, 1000 - memMs * 2));
+    setCard('b-mem', 'b-mem-bar', memScore, 1000, 'Mem');
+    await sleep(20);
+
+    // 4. Array ops
+    log('Testing array ops...');
+    await sleep(20);
+    const arrStart = performance.now();
+    const a = Array.from({length: 200_000}, (_,i) => i);
+    a.sort(() => Math.random() - 0.5);
+    a.filter(n => n % 2).map(n => n * 2).reduce((a,b) => a+b, 0);
+    const arrMs = performance.now() - arrStart;
+    const arrM = Math.round(0.2 / (arrMs / 1000));
+    setCard('b-arr', 'b-arr-bar', arrM, 20, 'Arr');
+    await sleep(20);
+
+    // 5. GPU — canvas stress test
+    log('Testing GPU/Canvas...');
+    await sleep(20);
+    const cvs = document.createElement('canvas');
+    cvs.width = 800; cvs.height = 600;
+    const gctx = cvs.getContext('2d');
+    let frames = 0;
+    const gpuStart = performance.now();
+    while (performance.now() - gpuStart < 800) {
+      gctx.clearRect(0,0,800,600);
+      for (let i = 0; i < 300; i++) {
+        gctx.beginPath();
+        gctx.arc(Math.random()*800, Math.random()*600, Math.random()*30+2, 0, Math.PI*2);
+        gctx.fillStyle = `hsl(${Math.random()*360},70%,50%)`;
+        gctx.fill();
+      }
+      frames++;
+    }
+    const gpuFps = Math.round(frames / 0.8);
+    const gpuScore = Math.round(Math.min(1000, gpuFps * 4));
+    setCard('b-gpu', 'b-gpu-bar', gpuScore, 1000, 'GPU');
+    setCard('b-fps', 'b-fps-bar', gpuFps, 250, 'FPS');
+    await sleep(20);
+
+    // Total score
+    const total = Math.round((cpuScore + gpuScore + memScore + Math.min(1000,opsM*3) + Math.min(1000,arrM*50)) / 5);
+    document.getElementById('b-total').textContent = total;
+    log(`Done — ${primes} primes found, canvas: ${gpuFps} fps, memory sum: ${Math.round(sum)}`);
+    btn.disabled = false; btn.classList.remove('running'); btn.textContent = 'Run Again';
+  }
+
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  // ════════════════════════════════════════
+  // MUSIC MAKER
+  // ════════════════════════════════════════
+  const STEPS    = 16;
+  const INSTRUMENTS = ['kick','snare','hihat','openhat','clap','bass','lead','pad'];
+  const INST_LABELS = {
+    kick:'Kick', snare:'Snare', hihat:'Hi-Hat', openhat:'Open Hat',
+    clap:'Clap', bass:'Bass', lead:'Lead', pad:'Pad'
+  };
+
+  // grid state: instrument → array of 16 booleans
+  const grid = {};
+  INSTRUMENTS.forEach(inst => { grid[inst] = new Array(STEPS).fill(false); });
+
+  let audioCtx = null;
+  let playing   = false;
+  let currentStep = -1;
+  let tempo     = 120;
+  let scheduleId = null;
+  let nextStepTime = 0;
+  let step      = 0;
+
+  // Build step number row
+  const numRow = document.getElementById('mm-step-nums');
+  for (let s = 0; s < STEPS; s++) {
+    const n = document.createElement('div');
+    n.className = 'mm-step-num';
+    n.textContent = s + 1;
+    numRow.appendChild(n);
+  }
+
+  // Build grid rows
+  const gridEl = document.getElementById('mm-grid');
+  INSTRUMENTS.forEach(inst => {
+    const row = document.createElement('div');
+    row.className = 'mm-row';
+    const lbl = document.createElement('div');
+    lbl.className = 'mm-label';
+    lbl.textContent = INST_LABELS[inst];
+    row.appendChild(lbl);
+    for (let s = 0; s < STEPS; s++) {
+      const cell = document.createElement('div');
+      cell.className = 'mm-cell';
+      if (s % 4 === 0) {
+        const marker = document.createElement('div');
+        marker.className = 'mm-beat-marker';
+        cell.appendChild(marker);
+      }
+      cell.dataset.inst = inst;
+      cell.dataset.step = s;
+      cell.addEventListener('click', () => {
+        grid[inst][s] = !grid[inst][s];
+        cell.classList.toggle('active', grid[inst][s]);
+      });
+      row.appendChild(cell);
+    }
+    gridEl.appendChild(row);
+  });
+
+  function getCell(inst, step) {
+    return gridEl.querySelector(`.mm-cell[data-inst="${inst}"][data-step="${step}"]`);
+  }
+
+  function clearPlayhead() {
+    document.querySelectorAll('.mm-cell.playing').forEach(c => {
+      const inst = c.dataset.inst;
+      const s    = parseInt(c.dataset.step);
+      c.classList.toggle('active', grid[inst][s]);
+      c.classList.remove('playing');
+    });
+  }
+
+  function showPlayhead(s) {
+    clearPlayhead();
+    INSTRUMENTS.forEach(inst => {
+      const cell = getCell(inst, s);
+      if (cell) cell.classList.add('playing');
+    });
+  }
+
+  // Audio synthesis
+  function getAudio() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return audioCtx;
+  }
+
+  function playSound(inst, time) {
+    const ac = getAudio();
+    const master = ac.createGain();
+    master.gain.value = 0.7;
+    master.connect(ac.destination);
+
+    const now = time || ac.currentTime;
+
+    if (inst === 'kick') {
+      const osc = ac.createOscillator();
+      const env = ac.createGain();
+      osc.connect(env); env.connect(master);
+      osc.frequency.setValueAtTime(150, now);
+      osc.frequency.exponentialRampToValueAtTime(0.01, now + 0.5);
+      env.gain.setValueAtTime(1, now);
+      env.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+      osc.start(now); osc.stop(now + 0.5);
+    } else if (inst === 'snare') {
+      const buf = ac.createBuffer(1, ac.sampleRate * 0.2, ac.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = (Math.random()*2-1) * Math.exp(-i/3000);
+      const src = ac.createBufferSource();
+      const flt = ac.createBiquadFilter();
+      flt.type = 'highpass'; flt.frequency.value = 1000;
+      src.buffer = buf; src.connect(flt); flt.connect(master);
+      src.start(now);
+    } else if (inst === 'hihat') {
+      const buf = ac.createBuffer(1, ac.sampleRate * 0.05, ac.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = (Math.random()*2-1) * Math.exp(-i/500);
+      const src = ac.createBufferSource();
+      const flt = ac.createBiquadFilter();
+      flt.type = 'highpass'; flt.frequency.value = 8000;
+      src.buffer = buf; src.connect(flt); flt.connect(master);
+      src.start(now);
+    } else if (inst === 'openhat') {
+      const buf = ac.createBuffer(1, ac.sampleRate * 0.3, ac.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = (Math.random()*2-1) * Math.exp(-i/8000);
+      const src = ac.createBufferSource();
+      const flt = ac.createBiquadFilter();
+      flt.type = 'highpass'; flt.frequency.value = 6000;
+      src.buffer = buf; src.connect(flt); flt.connect(master);
+      src.start(now);
+    } else if (inst === 'clap') {
+      for (let rep = 0; rep < 3; rep++) {
+        const buf = ac.createBuffer(1, ac.sampleRate * 0.05, ac.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < data.length; i++) data[i] = (Math.random()*2-1) * Math.exp(-i/1000);
+        const src = ac.createBufferSource();
+        src.buffer = buf; src.connect(master);
+        src.start(now + rep * 0.012);
+      }
+    } else if (inst === 'bass') {
+      const osc = ac.createOscillator();
+      const env = ac.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.value = 80;
+      const flt = ac.createBiquadFilter();
+      flt.type = 'lowpass'; flt.frequency.value = 400;
+      osc.connect(flt); flt.connect(env); env.connect(master);
+      env.gain.setValueAtTime(1, now);
+      env.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+      osc.start(now); osc.stop(now + 0.3);
+    } else if (inst === 'lead') {
+      const osc = ac.createOscillator();
+      const env = ac.createGain();
+      osc.type = 'square';
+      osc.frequency.value = 440;
+      osc.connect(env); env.connect(master);
+      env.gain.setValueAtTime(0.5, now);
+      env.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+      osc.start(now); osc.stop(now + 0.2);
+    } else if (inst === 'pad') {
+      const freqs = [220, 277, 330];
+      freqs.forEach(freq => {
+        const osc = ac.createOscillator();
+        const env = ac.createGain();
+        osc.type = 'sine'; osc.frequency.value = freq;
+        osc.connect(env); env.connect(master);
+        env.gain.setValueAtTime(0.15, now);
+        env.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+        osc.start(now); osc.stop(now + 0.6);
+      });
+    }
+  }
+
+  // Scheduler
+  function scheduler() {
+    const ac = getAudio();
+    const secPerStep = (60 / tempo) / 4;
+
+    while (nextStepTime < ac.currentTime + 0.1) {
+      const s = step % STEPS;
+      // Play active cells
+      INSTRUMENTS.forEach(inst => {
+        if (grid[inst][s]) playSound(inst, nextStepTime);
+      });
+      // Update UI on next frame
+      const capturedStep = s;
+      const delay = (nextStepTime - ac.currentTime) * 1000;
+      setTimeout(() => showPlayhead(capturedStep), Math.max(0, delay));
+      nextStepTime += secPerStep;
+      step++;
+    }
+    scheduleId = setTimeout(scheduler, 25);
+  }
+
+  function startSeq() {
+    const ac = getAudio();
+    if (ac.state === 'suspended') ac.resume();
+    step = 0;
+    nextStepTime = ac.currentTime + 0.05;
+    scheduler();
+  }
+
+  function stopSeq() {
+    if (scheduleId) clearTimeout(scheduleId);
+    clearPlayhead();
+  }
+
+  document.getElementById('mm-play').addEventListener('click', () => {
+    playing = !playing;
+    document.getElementById('mm-play').textContent = playing ? '■ Stop' : '▶ Play';
+    if (playing) startSeq(); else stopSeq();
+  });
+
+  document.getElementById('mm-clear').addEventListener('click', () => {
+    INSTRUMENTS.forEach(inst => {
+      grid[inst].fill(false);
+      for (let s = 0; s < STEPS; s++) {
+        const cell = getCell(inst, s);
+        if (cell) { cell.classList.remove('active'); cell.classList.remove('playing'); }
+      }
+    });
+  });
+
+  // Tempo sync between slider and number input
+  const tempoSlider = document.getElementById('mm-tempo-slider');
+  const tempoNum    = document.getElementById('mm-tempo-num');
+
+  tempoSlider.addEventListener('input', () => {
+    tempo = parseInt(tempoSlider.value);
+    tempoNum.value = tempo;
+  });
+  tempoNum.addEventListener('input', () => {
+    let v = parseInt(tempoNum.value);
+    if (isNaN(v)) return;
+    v = Math.max(40, Math.min(220, v));
+    tempo = v;
+    tempoSlider.value = v;
+  });
+</script>
+</body>
+</html>

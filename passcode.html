@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>...</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: 'Space Mono', monospace;
+      overflow: hidden;
+    }
+
+    .wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+      animation: fadein 1.2s ease forwards;
+    }
+
+    @keyframes fadein {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    label {
+      font-size: 11px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.25);
+    }
+
+    input {
+      background: none;
+      border: none;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      color: #fff;
+      font-family: 'Space Mono', monospace;
+      font-size: 1.2rem;
+      letter-spacing: 0.2em;
+      text-align: center;
+      width: 220px;
+      padding: 0.5rem 0;
+      outline: none;
+      transition: border-color 0.3s;
+      caret-color: #7fffb2;
+    }
+
+    input:focus { border-color: rgba(255,255,255,0.4); }
+
+    input.error {
+      border-color: rgba(255,80,80,0.6);
+      animation: shake 0.4s ease;
+    }
+
+    input.success {
+      border-color: #7fffb2;
+    }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%      { transform: translateX(-8px); }
+      40%      { transform: translateX(8px); }
+      60%      { transform: translateX(-6px); }
+      80%      { transform: translateX(4px); }
+    }
+
+    .hint {
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      color: rgba(255,255,255,0.1);
+      text-transform: uppercase;
+      transition: color 0.3s;
+      min-height: 1em;
+    }
+
+    .hint.visible { color: rgba(255,80,80,0.5); }
+  </style>
+</head>
+<body>
+
+<div class="wrap">
+  <label for="code">enter passcode</label>
+  <input type="password" id="code" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" autofocus>
+  <p class="hint" id="hint"></p>
+</div>
+
+<script>
+  // Split so it's not obvious at a glance
+  const P1 = 'd';
+  const P2 = 'v';
+  const P3 = 'd';
+  const CODE = P1 + P2 + P3;
+
+  const input = document.getElementById('code');
+  const hint  = document.getElementById('hint');
+
+  input.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const val = input.value.trim().toLowerCase();
+
+    if (val === CODE) {
+      input.classList.add('success');
+      // Fade out then redirect
+      document.querySelector('.wrap').style.transition = 'opacity 0.6s';
+      document.querySelector('.wrap').style.opacity = '0';
+      setTimeout(() => window.location.href = 'dvd.html', 650);
+    } else {
+      input.classList.remove('error');
+      void input.offsetWidth; // re-trigger animation
+      input.classList.add('error');
+      hint.textContent = 'incorrect';
+      hint.classList.add('visible');
+      input.value = '';
+      setTimeout(() => {
+        input.classList.remove('error');
+        hint.classList.remove('visible');
+        hint.textContent = '';
+      }, 1500);
+    }
+  });
+</script>
+</body>
+</html>
